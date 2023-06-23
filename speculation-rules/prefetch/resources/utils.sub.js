@@ -7,6 +7,8 @@ const SR_PREFETCH_UTILS_URL = new URL(document.currentScript.src, document.baseU
 // Hostname for cross origin urls.
 const PREFETCH_PROXY_BYPASS_HOST = "{{hosts[alt][]}}";
 
+const EAGERNESS_MODERATE = "moderate";
+const EAGERNESS_CONSERVATIVE = "conservative";
 class PrefetchAgent extends RemoteContext {
   constructor(uuid, t) {
     super(uuid);
@@ -41,11 +43,14 @@ class PrefetchAgent extends RemoteContext {
   // In the future, this should also use browser hooks to force the prefetch to
   // occur despite heuristic matching, etc., and await the completion of the
   // prefetch.
-  async forceSinglePrefetch(url, extra = {}) {
+  async forceSinglePrefetch(url, extra = {}, delay = 2000) {
     await this.execute_script((url, extra) => {
       insertSpeculationRules({ prefetch: [{source: 'list', urls: [url], ...extra}] });
     }, [url, extra]);
-    return new Promise(resolve => this.t.step_timeout(resolve, 2000));
+    if (delay === 0) {
+      return Promise.resolve();
+    }
+    return new Promise(resolve => this.t.step_timeout(resolve, delay));
   }
 
   // `url` is the URL to navigate.
@@ -129,11 +134,19 @@ async function isUrlPrefetched(url) {
 }
 
 // Must also include /common/utils.js and /common/dispatcher/dispatcher.js to use this.
-async function spawnWindow(t, options = {}, uuid = token()) {
+async function spawnWindowWithReference(t, options = {}, uuid = token()) {
   let agent = new PrefetchAgent(uuid, t);
   let w = window.open(agent.getExecutorURL(options), '_blank', options);
-  t.add_cleanup(() => w.close());
-  return agent;
+  t.add_cleanup(() => {
+    w.close();
+  });
+  return {"agent":agent, "window":w};
+}
+
+// Must also include /common/utils.js and /common/dispatcher/dispatcher.js to use this.
+async function spawnWindow(t, options = {}, uuid = token()) {
+  let agent_window_pair = await spawnWindowWithReference(t, options, uuid);
+  return agent_window_pair.agent;
 }
 
 function insertSpeculationRules(body) {
@@ -175,4 +188,12 @@ function assert_prefetched (requestHeaders, description) {
 function assert_not_prefetched (requestHeaders, description){
   assert_equals(requestHeaders.purpose, "", description);
   assert_equals(requestHeaders.sec_purpose, "", description);
+}
+
+function addNoVarySearchHeaderUsingQueryParam(url, value){
+  // Use nvs_header query parameter to ask the wpt server
+  // to populate No-Vary-Search response header.
+  if(value){
+    url.searchParams.append("nvs_header", value);
+  }
 }
