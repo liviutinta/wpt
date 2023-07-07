@@ -3,20 +3,24 @@
 <script src="/resources/testharnessreport.js"></script>
 <body>
 <script>
-// Test handling of blocked responses in CORB/ORB.
-function probe() {
+// A cross-origin response labelled as text/csv, which will call
+// script_callback when executed.
+const probe = "https://{{domains[www1]}}:{{ports[https][0]}}" +
+    "/fetch/corb/resources/response_block_probe.js";
+
+// Check that script was never executed:
+window.script_callback_called = false;
+window.script_callback = _ => { window.script_callback_called = true };
+
+// Test handling of blocked responses in CORB/ORB for <script> elements.
+function probe_script() {
   // We will cross-origin load a script resource that should get blocked by all
   // versions of CORB/ORB. Three things may happen:
   //
   // 1, The script might execute. (CORB/ORB not supported. Or a bug.)
   // 2, An empty response is injected: The script loads but nothing is executed.
-  //    (Expected behaviour for CORB and "ORB v0.1".)
+  //    (Expected behaviour for CORB.)
   // 3, An error is injected and script loading aborts. (Expected for ORB.)
-
-  // A cross-origin response labelled as text/csv, which will call
-  // script_callback when executed.
-  const probe = "https://{{domains[www1]}}:{{ports[https][0]}}" +
-      "/fetch/corb/resources/response_block_probe.js";
 
   // Load the probe as a script.
   const script = document.createElement("script");
@@ -29,16 +33,30 @@ function probe() {
   return new Promise((resolve, reject) => {
     script.onload = _ => resolve("script loaded");
     script.onerror = _ => resolve("script errored");
-    window.script_callback = _ => resolve("script executed");
   });
 }
 
-promise_test(t => probe().then(
+// Test handling of blocked responses in CORB/ORB for script-initiated fetches.
+function probe_fetch() {
+  return fetch(probe, {mode: "no-cors"}).then(
+    _ => "script loaded", _ => "script errored");
+}
+
+promise_test(t => probe_script().then(
     value => assert_equals(value, "script errored")),
-    "ORB: Expect error response.");
+    "ORB: Expect error response from <script> fetch.");
+promise_test(t => probe_fetch().then(
+    value => assert_equals(value, "script errored")),
+    "ORB: Expect error response from fetch().");
 
 // This test ensures we're _not_ seeing CORB behaviour.
-promise_test(t => probe().then(
+promise_test(t => probe_script().then(
     value => assert_not_equals(value, "script loaded")),
-    "!CORB: CORB would have expected an empty response.");
+    "!CORB: CORB would have expected an empty response from <script> fetch.");
+promise_test(t => probe_fetch().then(
+    value => assert_not_equals(value, "script loaded")),
+    "!CORB: CORB would have expected an empty response from fetch().");
+
+test(t => { assert_false(window.script_callback_called); },
+    "Check that script was not executed.");
 </script>
