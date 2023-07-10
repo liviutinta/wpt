@@ -7,8 +7,8 @@
   <script>
     'use strict';
     const same_origin_src = '/shared-storage/resources/shared-storage-permissions-policy-helper.html';
-    const cross_origin_src = 'https://{{domains[www]}}:{{ports[https][0]}}' +
-      same_origin_src;
+    const crossOrigin = 'https://{{domains[www]}}:{{ports[https][0]}}';
+    const cross_origin_src = crossOrigin + same_origin_src;
     const header = 'permissions policy header shared-storage=()';
 
     promise_test(async t => {
@@ -26,7 +26,26 @@
           expect_feature_unavailable_default);
     }, header + ' disallows sharedStorage in cross-origin iframes.');
 
-    // TODO(crbug.com/1434529): Add tests with
-    // `fetch(<url>, {sharedStorageWritable: true})`.
+    const same_origin_writable_url =
+      '/shared-storage/resources/shared-storage-write.py';
+    const cross_origin_writable_url = crossOrigin + same_origin_writable_url;
+
+    promise_test(async t => {
+      let response = await fetch(same_origin_writable_url,
+                                 {sharedStorageWritable: true});
+      let shared_storage_writable_header = await response.text();
+      assert_equals(shared_storage_writable_header,
+                    "NO_SHARED_STORAGE_WRITABLE_HEADER");
+    }, header + ' disallows the \'Shared-Storage-Writable\' header to be sent '
+              + 'for the same-origin shared storage fetch request.');
+
+    promise_test(async t => {
+      let response = await fetch(cross_origin_writable_url,
+                                 {sharedStorageWritable: true});
+      let shared_storage_writable_header = await response.text();
+      assert_equals(shared_storage_writable_header,
+                    "NO_SHARED_STORAGE_WRITABLE_HEADER");
+    }, header + ' disallows the \'Shared-Storage-Writable\' header to be sent '
+              + 'for the cross-origin shared storage fetch request.');
   </script>
 </body>
