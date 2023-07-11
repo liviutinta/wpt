@@ -28,6 +28,7 @@ t.step(function() {
       ctx.fillText('E  EE', 0, 37.5);
       _assertPixelApprox(canvas, 25,25, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 75,25, 255,0,0,255, 2);
-    }).then(t_pass, t_fail);
+  });
+  t.done();
 });
 done();

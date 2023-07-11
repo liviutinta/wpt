@@ -24,18 +24,19 @@ t.step(function() {
   let fonts = (self.fonts ? self.fonts : document.fonts);
   f.load();
   fonts.add(f);
+  ctx.fillStyle = '#f00';
+  ctx.fillRect(0, 0, 100, 50);
+  ctx.font = '67px CanvasTest';
+  ctx.fillStyle = '#0f0';
+  ctx.fillText('AA', 0, 50);
   fonts.ready.then(function() {
-      ctx.fillStyle = '#f00';
-      ctx.fillRect(0, 0, 100, 50);
-      ctx.font = '67px CanvasTest';
-      ctx.fillStyle = '#0f0';
-      ctx.fillText('AA', 0, 50);
       ctx.fillText('AA', 0, 50);
       _assertPixelApprox(canvas, 5,5, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 95,5, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 25,25, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 75,25, 0,255,0,255, 2);
-    }).then(t_pass, t_fail);
+  });
+  t.done();
 
 });
 </script>

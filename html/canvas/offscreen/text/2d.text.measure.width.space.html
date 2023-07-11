@@ -33,7 +33,8 @@ t.step(function() {
 
       _assertSame(ctx.measureText(' AB').width, 150, "ctx.measureText(' AB').width", "150");
       _assertSame(ctx.measureText('AB ').width, 150, "ctx.measureText('AB ').width", "150");
-  }).then(t_pass, t_fail);
+  });
+  t.done();
 
 });
 </script>

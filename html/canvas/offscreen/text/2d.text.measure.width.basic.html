@@ -32,7 +32,8 @@ t.step(function() {
 
       ctx.font = '100px CanvasTest';
       _assertSame(ctx.measureText('A').width, 100, "ctx.measureText('A').width", "100");
-  }).then(t_pass, t_fail);
+  });
+  t.done();
 
 });
 </script>

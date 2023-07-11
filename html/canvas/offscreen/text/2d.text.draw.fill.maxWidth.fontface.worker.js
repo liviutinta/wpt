@@ -30,6 +30,7 @@ t.step(function() {
       _assertPixelApprox(canvas, 95,5, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 25,25, 0,255,0,255, 2);
       _assertPixelApprox(canvas, 75,25, 0,255,0,255, 2);
-    }).then(t_pass, t_fail);
+  });
+  t.done();
 });
 done();

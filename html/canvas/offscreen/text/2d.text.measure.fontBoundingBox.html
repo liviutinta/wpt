@@ -34,7 +34,8 @@ t.step(function() {
 
       assert_approx_equals(ctx.measureText('ABCD').fontBoundingBoxAscent, 50 * 1745 / 1024, 1, "unexpected fontBoundingBoxAscent");
       assert_approx_equals(ctx.measureText('ABCD').fontBoundingBoxDescent, 50 * 805 / 1024, 1, "unexpected fontBoundingBoxDescent");
-  }).then(t_pass, t_fail);
+  });
+  t.done();
 
 });
 </script>

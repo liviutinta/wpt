@@ -31,6 +31,7 @@ t.step(function() {
       _assertSame(Math.abs(ctx.measureText('ABCD').alphabeticBaseline), 0, "Math.abs(ctx.measureText('ABCD').alphabeticBaseline)", "0");
       _assertSame(ctx.measureText('ABCD').ideographicBaseline, 6.25, "ctx.measureText('ABCD').ideographicBaseline", "6.25");
       _assertSame(ctx.measureText('ABCD').hangingBaseline, 25, "ctx.measureText('ABCD').hangingBaseline", "25");
-  }).then(t_pass, t_fail);
+  });
+  t.done();
 });
 done();
